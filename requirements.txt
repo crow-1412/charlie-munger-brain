@@ -1,0 +1,37 @@
+# Charlie Munger's Second Brain - GraphRAG Project
+# 穷查理宝典知识图谱项目依赖
+
+# Core GraphRAG
+llama-index>=0.10.0
+llama-index-graph-stores-neo4j>=0.1.0
+llama-index-llms-openai>=0.1.0
+llama-index-embeddings-dashscope>=0.1.0
+llama-index-embeddings-huggingface>=0.1.0
+
+# LLM Providers (多模型支持)
+openai>=1.0.0
+dashscope>=1.14.0  # 通义千问
+zhipuai>=2.0.0     # 智谱AI
+
+# Graph Database
+networkx>=3.0
+pyvis>=0.3.2       # 图可视化
+
+# Data Processing
+python-dotenv>=1.0.0
+tiktoken>=0.5.0
+pandas>=2.0.0
+
+# Text Processing
+jieba>=0.42.1      # 中文分词
+pypdf>=4.0.0       # PDF处理
+markdown>=3.5.0
+
+# Utilities
+rich>=13.0.0       # 美化输出
+tqdm>=4.66.0       # 进度条
+pydantic>=2.0.0    # 数据验证
+
+# Optional: Neo4j (如果要用专业图数据库)
+# neo4j>=5.0.0
+
