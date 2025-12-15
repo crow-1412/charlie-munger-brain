@@ -60,3 +60,4 @@ neo4j_data/
 .DS_Store
 Thumbs.db
 
+.env.backup

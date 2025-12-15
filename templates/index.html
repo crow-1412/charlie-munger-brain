@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Charlie Munger's Second Brain</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <!-- Markdown 渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- 背景装饰 -->
+    <div class="bg-decoration">
+        <div class="bg-circle bg-circle-1"></div>
+        <div class="bg-circle bg-circle-2"></div>
+        <div class="bg-circle bg-circle-3"></div>
+    </div>
+
+    <!-- 头部导航 -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🧠</span>
+                <div class="logo-text">
+                    <h1>Charlie Munger's Second Brain</h1>
+                    <p>穷查理宝典 · GraphRAG 知识图谱</p>
+                </div>
+            </div>
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="graph">知识图谱</button>
+                <button class="nav-tab" data-tab="chat">智能问答</button>
+                <button class="nav-tab" data-tab="explore">概念探索</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 知识图谱面板 -->
+        <section id="graph-panel" class="panel active">
+            <div class="panel-header">
+                <h2>📊 知识图谱可视化</h2>
+                <div class="stats-bar" id="stats-bar">
+                    <span class="stat-item"><span class="stat-value" id="node-count">0</span> 节点</span>
+                    <span class="stat-item"><span class="stat-value" id="edge-count">0</span> 关系</span>
+                </div>
+            </div>
+            
+            <!-- 过滤器工具栏 -->
+            <div class="filter-toolbar">
+                <span class="filter-label">筛选类型：</span>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-type="概念" onclick="toggleFilter('概念')" style="--btn-color: #FF6B6B">
+                        <span class="filter-icon">💡</span> 概念
+                    </button>
+                    <button class="filter-btn active" data-type="思维模型" onclick="toggleFilter('思维模型')" style="--btn-color: #4ECDC4">
+                        <span class="filter-icon">🧠</span> 思维模型
+                    </button>
+                    <button class="filter-btn active" data-type="原则" onclick="toggleFilter('原则')" style="--btn-color: #45B7D1">
+                        <span class="filter-icon">📐</span> 原则
+                    </button>
+                    <button class="filter-btn active" data-type="人物" onclick="toggleFilter('人物')" style="--btn-color: #96CEB4">
+                        <span class="filter-icon">👤</span> 人物
+                    </button>
+                    <button class="filter-btn active" data-type="公司" onclick="toggleFilter('公司')" style="--btn-color: #FFEAA7">
+                        <span class="filter-icon">🏢</span> 公司
+                    </button>
+                    <button class="filter-btn active" data-type="案例" onclick="toggleFilter('案例')" style="--btn-color: #DDA0DD">
+                        <span class="filter-icon">📋</span> 案例
+                    </button>
+                    <button class="filter-btn active" data-type="学科" onclick="toggleFilter('学科')" style="--btn-color: #98D8C8">
+                        <span class="filter-icon">📚</span> 学科
+                    </button>
+                    <button class="filter-btn active" data-type="认知偏误" onclick="toggleFilter('认知偏误')" style="--btn-color: #F7DC6F">
+                        <span class="filter-icon">⚠️</span> 认知偏误
+                    </button>
+                </div>
+                <button class="filter-reset" onclick="resetFilters()">全部显示</button>
+            </div>
+
+            <div class="graph-container">
+                <div id="graph-canvas"></div>
+                
+                <!-- 操作提示 -->
+                <div class="graph-tips">
+                    <p>💡 <strong>操作提示：</strong></p>
+                    <p>• 点击节点查看详情</p>
+                    <p>• 双击节点深入探索</p>
+                    <p>• 滚轮缩放，拖拽移动</p>
+                    <p>• 使用上方筛选器过滤类型</p>
+                </div>
+                
+                <!-- 节点详情 -->
+                <div class="node-detail" id="node-detail">
+                    <button class="close-btn" onclick="closeNodeDetail()">×</button>
+                    <h3 id="detail-name"></h3>
+                    <span class="entity-type" id="detail-type"></span>
+                    <p class="description" id="detail-desc"></p>
+                    <div class="relations" id="detail-relations"></div>
+                </div>
+            </div>
+            
+            <!-- 无数据提示 -->
+            <div class="empty-state" id="empty-state" style="display: none;">
+                <div class="empty-icon">📚</div>
+                <h3>尚未构建知识图谱</h3>
+                <p>选择一种方式构建知识图谱</p>
+                <div class="build-options">
+                    <button class="btn btn-primary btn-llm" onclick="buildFullSystem()">
+                        <span class="btn-icon">🚀</span>
+                        完整构建（推荐）
+                    </button>
+                    <button class="btn btn-secondary" onclick="buildWithLLM()">
+                        <span class="btn-icon">🧠</span>
+                        仅提取知识图谱
+                    </button>
+                    <button class="btn btn-tertiary" onclick="buildDemo()">
+                        <span class="btn-icon">⚡</span>
+                        快速演示
+                    </button>
+                </div>
+                <p class="build-hint">
+                    🚀 <strong>完整构建</strong>：知识图谱 + 向量索引，支持语义搜索和原文引用<br>
+                    🧠 <strong>仅知识图谱</strong>：提取实体和关系，适合关系探索<br>
+                    ⚡ <strong>快速演示</strong>：使用预设数据，无需处理书籍
+                </p>
+            </div>
+        </section>
+
+        <!-- 智能问答面板 -->
+        <section id="chat-panel" class="panel">
+            <div class="chat-layout">
+                <!-- 对话历史侧边栏 -->
+                <aside class="chat-sidebar">
+                    <div class="sidebar-header">
+                        <h3>💬 对话历史</h3>
+                        <button class="btn-new-chat" onclick="createNewConversation()" title="新建对话">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14M5 12h14"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="conversation-list" id="conversation-list">
+                        <!-- 动态填充 -->
+                    </div>
+                </aside>
+                
+                <!-- 聊天主区域 -->
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h2>💬 智能问答</h2>
+                        <p>基于知识图谱 + 向量检索的深度问答</p>
+                    </div>
+                    
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- 动态填充 -->
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="输入你的问题..." onkeypress="handleKeyPress(event)">
+                        <button class="btn btn-send" onclick="sendQuestion()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 概念探索面板 -->
+        <section id="explore-panel" class="panel">
+            <div class="explore-container">
+                <div class="explore-header">
+                    <h2>🔍 概念探索</h2>
+                    <p>深入探索芒格的思维模型和概念网络</p>
+                </div>
+                
+                <div class="explore-search">
+                    <input type="text" id="explore-input" placeholder="输入概念名称，如：复利、多元思维模型..." onkeypress="handleExploreKeyPress(event)">
+                    <button class="btn btn-explore" onclick="exploreEntity()">探索</button>
+                </div>
+                
+                <div class="explore-suggestions">
+                    <h4>热门概念</h4>
+                    <div class="suggestion-tags" id="suggestion-tags">
+                        <!-- 动态填充 -->
+                    </div>
+                </div>
+                
+                <div class="explore-result" id="explore-result">
+                    <!-- 探索结果 -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 底部 -->
+    <footer class="footer">
+        <p>"反过来想，总是反过来想。" —— 查理·芒格</p>
+    </footer>
+
+    <!-- 加载遮罩 -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>正在处理...</p>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+
